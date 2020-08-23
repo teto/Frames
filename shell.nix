@@ -40,7 +40,7 @@ let
 
   hspkgs = pkgs.haskell.packages.${compiler}.override {
     overrides = self: super: {
-      vinyl = pkgs.haskell.lib.dontBenchmark (super.callPackage ~/Projects/Vinyl {});
+      # vinyl = pkgs.haskell.lib.dontBenchmark (super.callPackage ~/Projects/Vinyl {});
     } // overrideByVersion self super;
   };
   drv = hspkgs.callPackage ./default.nix {};

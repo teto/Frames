@@ -295,16 +295,18 @@ tableTypesExplicit' tys (RowGen {..}) csvFile =
 -- | For each column, we declare a type synonym for its type, and a
 -- Proxy value of that type.
 -- colDecExplicit :: T.Text -> T.Text -> Q Type -> DecsQ
-colDecExplicit :: T.Text -> T.Text -> Q Type -> DecsQ
-colDecExplicit prefix colName colTyQ =
+colDecExplicit :: T.Text -> T.Text -> TypeQ -> DecsQ
+colDecExplicit prefix colName colTyQ = do
   -- (:) <$> mkColTDec colTypeQ colTName'
   --                                 <*> mkColPDec colTName' colTyQ colPName
   --- mkColPDec got renamed to mkColLensDec
-  (:) <$> mkColSynDec colTypeQ colTName'
-      <*> mkColLensDec colTName' colTyQ colPName
+  colTy <- colTyQ
+  (:) <$> mkColSynDec colTyQ colTName'
+      <*> mkColLensDec colTName' colTy colPName
   where colTName = sanitizeTypeName (prefix <> colName)
         colPName = maybe "colDec impossible"
                          (\(c,t) -> T.cons (toLower c) t)
                          (T.uncons colTName)
         colTName' = mkName $ T.unpack colTName
-        colTypeQ = [t|$(litT . strTyLit $ T.unpack colName) :-> $colTyQ|]
+        -- colTy = [t|colTyQ|]
+        -- colTypeQ = [t|$(litT . strTyLit $ T.unpack colName) :-> $colTyQ|]
