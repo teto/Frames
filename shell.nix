@@ -1,10 +1,10 @@
-{ compiler ? "ghc883"
+{ compiler ? "ghc8102"
 , withHoogle ? true
 , sources ? import ./nix/sources.nix
 }:
 let
   pkgs = import sources.nixpkgs {};
-  overrideByVersion = if compiler == "ghc8101"
+  overrideByVersion = if compiler == "ghc8102"
                       then self: super: 
                         with {inherit (pkgs.haskell.lib) doJailbreak dontCheck;}; {
                           list-t = dontCheck super.list-t;
@@ -47,10 +47,13 @@ let
   ghc = hspkgs.ghc.withHoogle (ps: drv.passthru.getBuildInputs.haskellBuildInputs);
 in
 pkgs.mkShell {
-  buildInputs = [ ghc
-                  hspkgs.cabal-install
-                  pkgs.llvmPackages_7.llvm
-  ] ++ pkgs.lib.optional (compiler == "ghc883") hspkgs.ghcide;
+  buildInputs = [
+    ghc
+    hspkgs.cabal-install
+    # pkgs.llvmPackages_7.llvm
+    hspkgs.haskell-language-server
+  # ] ++ pkgs.lib.optional (compiler == "ghc883") hspkgs.ghcide;
+  ];
   shellHook = ''
     source <(grep '^export NIX_' ${ghc}/bin/ghc)
     source <(echo 'export HIE_HOOGLE_DATABASE='$(grep -F -- '--database' ${ghc}/bin/hoogle | sed 's/.* --database \(.*\.hoo\).*/\1/'))
